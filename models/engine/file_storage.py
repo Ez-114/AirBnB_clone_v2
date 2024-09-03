@@ -6,9 +6,19 @@ This module implements the FileStorage class that helps in storing
 a persistent JSON file containing all data about the pre-defined objects
 from their classes.
 """
-import json
-import os
 
+import os
+import json
+from models.amenity import Amenity
+from models.base_model import BaseModel
+from models.city import City
+from models.place import Place
+from models.review import Review
+from models.state import State
+from models.user import User
+
+classes = {"Amenity": Amenity, "BaseModel": BaseModel, "City": City,
+           "Place": Place, "Review": Review, "State": State, "User": User}
 
 class FileStorage:
     """
@@ -33,14 +43,15 @@ class FileStorage:
     __file_path = "file.json"
     __objects = {}
 
-    def all(self):
-        """
-        FileStorage.all() Instance method.
-
-        Returns:
-            dict: the __objects dictionary
-        """
-        return FileStorage.__objects
+    def all(self, cls=None):
+        """returns the dictionary __objects"""
+        if cls is not None:
+            new_dict = {}
+            for key, value in self.__objects.items():
+                if cls == value.__class__ or cls == value.__class__.__name__:
+                    new_dict[key] = value
+            return new_dict
+        return self.__objects
 
     def new(self, obj):
         """
@@ -48,7 +59,9 @@ class FileStorage:
 
         Sets in __objects the obj with key <obj class name>.id
         """
-        self.all().update({obj.to_dict()['__class__'] + '.' + obj.id: obj})
+        if obj is not None:
+            key = obj.__class__.__name__ + "." + obj.id
+            self.__objects[key] = obj
 
     def save(self):
         """
@@ -73,22 +86,6 @@ class FileStorage:
         Deserializes the JSON file to __objects
         (only if the JSON file (__file_path) exists ; otherwise, do nothing.)
         """
-
-        from models.base_model import BaseModel
-        from models.user import User
-        from models.state import State
-        from models.city import City
-        from models.amenity import Amenity
-        from models.place import Place
-        from models.review import Review
-
-        classes_dict = {
-            'BaseModel': BaseModel, 'User': User,
-            'State': State, 'City': City,
-            'Amenity': Amenity,
-            'Place': Place, 'Review': Review
-        }
-
         if os.path.exists(FileStorage.__file_path):
             with open(FileStorage.__file_path, mode='r', encoding='utf-8') \
                     as storage_file:
@@ -98,5 +95,12 @@ class FileStorage:
             # Now fill in the __objects dict with loaded objects
             for obj_id, obj_data in loaded_objs.items():
                 FileStorage.__objects.update({
-                        obj_id: classes_dict[obj_data['__class__']](**obj_data)
+                        obj_id: classes[obj_data['__class__']](**obj_data)
                     })
+
+    def delete(self, obj=None):
+        """delete obj from __objects if it's inside"""
+        if obj is not None:
+            key = obj.__class__.__name__ + '.' + obj.id
+            if key in self.__objects:
+                del self.__objects[key]
