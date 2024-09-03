@@ -21,6 +21,8 @@ its timestamps.
 """
 
 from datetime import datetime
+from sqlalchemy import Column, String, Integer, DateTime
+from sqlalchemy.orm import declarative_base
 import uuid
 import models
 
@@ -34,6 +36,10 @@ class BaseModel:
     The parent of all model classes. It defines all common
     attributes and methods for other model classes.
     """
+
+    id = Column(String(60), primary_key=True)
+    created_at = Column(DateTime, default=datetime.now, nullable=False)
+    updated_at = Column(DateTime, default=datetime.now, nullable=False)
 
     def __init__(self, *_, **kwargs):
         """
@@ -61,7 +67,6 @@ class BaseModel:
             self.id = str(uuid.uuid4())
             self.created_at = datetime.now()
             self.updated_at = self.created_at
-            models.storage.new(self)
 
     def save(self):
         """
@@ -93,7 +98,15 @@ class BaseModel:
         instance_dict['created_at'] = self.created_at.isoformat()
         instance_dict['updated_at'] = self.updated_at.isoformat()
 
+        if "_sa_instance_state" in instance_dict:
+            del instance_dict["_sa_instance_state"]
+
         return instance_dict
+
+    def delete(self):
+        """delete the current instance"""
+
+        models.storage.delete(self)
 
     def __str__(self):
         """
