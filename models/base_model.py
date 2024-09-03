@@ -27,6 +27,7 @@ import uuid
 import models
 
 time = "%Y-%m-%dT%H:%M:%S.%f"
+Base = declarative_base()
 
 
 class BaseModel:
