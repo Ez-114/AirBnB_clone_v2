@@ -14,18 +14,26 @@ def index():
     return 'Hello HBNB!'
 
 
-@app.route('/hbnb')
+@app.route('/hbnb', strict_slashes=False)
 def hbnb():
     """goes to hbnb"""
 
     return 'HBNB'
 
 
-@app.route('/c/<text>')
+@app.route('/c/<text>', strict_slashes=False)
 def cisfun(text):
     """display c followed by passed text"""
 
     return "C " + text.replace('_', ' ')
+
+
+@app.route('/python', strict_slashes=False)
+@app.route('/python/<text>', strict_slashes=False)
+def pyiscool(text="is cool"):
+    """Display text"""
+
+    return "Python " + text.replace('_', ' ')
 
 
 if __name__ == '__main__':
